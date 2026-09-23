@@ -1,0 +1,8 @@
+node_modules/
+.pnpm-store/
+data/
+.env
+.env.local
+.neon/
+.vercel/
+.DS_Store
