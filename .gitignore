@@ -4,5 +4,6 @@ data/
 .env
 .env.local
 .neon/
+.neon
 .vercel/
 .DS_Store

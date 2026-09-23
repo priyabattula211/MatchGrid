@@ -2,6 +2,8 @@
 
 A dark-themed sports scheduling app for administrators to manage sports and view reports, and for players to create and join sport sessions. A session creator can cancel with a reason visible to joined players.
 
+Live app: https://matchgrid.onrender.com/
+
 This is a separate application and repository. Use a separate hosted database and service when deploying it; do not reuse the original Sport Scheduler database or admin credentials.
 
 ## Local setup
