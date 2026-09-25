@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-primary: #445D48; /* Aesthetic Green Background */
+  --color-bg-secondary: #3b503e; /* Slightly darker green for cards */
+  --color-bg-tertiary: #304233;
+  
+  --color-text-primary: #FDE5D4; /* Peach for primary text */
+  --color-text-secondary: #D6CC99; /* Khaki for secondary text */
+  
+  --color-accent-blue: #5E3023; /* Brown Accent */
+  --color-accent-cyan: #001524; /* Navy used as primary highlight */
+  --color-accent-indigo: #D6CC99; /* Khaki used as secondary highlight */
+}
+
+@layer base {
+  body {
+    @apply bg-bg-primary text-text-primary antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow-x: hidden;
+  }
+}
+
+/* Custom utility for glassmorphism */
+.glass-panel {
+  @apply bg-bg-secondary/40 backdrop-blur-xl border border-white/10 shadow-2xl;
+}
+
+/* Aurora gradient animation */
+@keyframes aurora {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+.animate-aurora {
+  animation: aurora 15s ease-in-out infinite alternate;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}

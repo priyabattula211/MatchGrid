@@ -74,12 +74,17 @@ function localDateToIso(value, offset) {
   return iso;
 }
 
-app.get('/', (req, res) => res.redirect('/sessions'));
-app.get('/signup', (req, res) => render(res, 'signup', { error: null, values: {} }));
-app.post('/signup', async (req, res, next) => {
+app.get('/api/csrf', (req, res) => res.json({ csrf: req.session.csrf }));
+
+app.get('/', (req, res) => res.sendFile(join(root, 'public', 'landing', 'index.html')));
+app.get('/signup', (req, res) => res.sendFile(join(root, 'public', 'landing', 'index.html')));
+app.post(['/signup', '/api/signup'], async (req, res, next) => {
+  const isJson = req.headers.accept && req.headers.accept.includes('application/json');
   const name = clean(req.body.name), email = clean(req.body.email).toLowerCase(), password = String(req.body.password || '');
-  if (!name || name.length > 100 || !validEmail(email) || email.length > 254 || password.length < 12)
-    return render(res, 'signup', { error: 'Enter a name, valid email, and password of at least 12 characters.', values: { name, email } }, 400);
+  if (!name || name.length > 100 || !validEmail(email) || email.length > 254 || password.length < 12) {
+    const errorMsg = 'Enter a name, valid email, and password of at least 12 characters.';
+    return isJson ? res.status(400).json({ error: errorMsg }) : render(res, 'signup', { error: errorMsg, values: { name, email } }, 400);
+  }
   try {
     const result = await run('INSERT INTO users(name,email,password_hash,role) VALUES(?,?,?,?) RETURNING id', name, email, bcrypt.hashSync(password, 12), 'player');
     req.session.regenerate(err => {
@@ -87,23 +92,29 @@ app.post('/signup', async (req, res, next) => {
       req.login({ id: result.lastInsertRowid }, error => {
         if (error) return next(error);
         req.session.csrf = randomBytes(32).toString('hex');
+        if (isJson) return res.json({ success: true, redirect: '/sessions' });
         res.redirect('/sessions');
       });
     });
   } catch (error) {
-    if (error.code === '23505') return render(res, 'signup', { error: 'That email is already registered.', values: { name, email } }, 400);
+    if (error.code === '23505') {
+      const errorMsg = 'That email is already registered.';
+      return isJson ? res.status(400).json({ error: errorMsg }) : render(res, 'signup', { error: errorMsg, values: { name, email } }, 400);
+    }
     next(error);
   }
 });
-app.get('/login', (req, res) => render(res, 'login', { error: null }));
-app.post('/login', (req, res, next) => passport.authenticate('local', (error, user) => {
+app.get('/login', (req, res) => res.sendFile(join(root, 'public', 'landing', 'index.html')));
+app.post(['/login', '/api/login'], (req, res, next) => passport.authenticate('local', (error, user) => {
+  const isJson = req.headers.accept && req.headers.accept.includes('application/json');
   if (error) return next(error);
-  if (!user) return render(res, 'login', { error: 'Incorrect email or password.' }, 401);
+  if (!user) return isJson ? res.status(401).json({ error: 'Incorrect email or password.' }) : render(res, 'login', { error: 'Incorrect email or password.' }, 401);
   req.session.regenerate(err => {
     if (err) return next(err);
     req.login(user, err2 => {
       if (err2) return next(err2);
       req.session.csrf = randomBytes(32).toString('hex');
+      if (isJson) return res.json({ success: true, redirect: '/sessions' });
       res.redirect('/sessions');
     });
   });
